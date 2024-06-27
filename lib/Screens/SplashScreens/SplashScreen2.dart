@@ -50,7 +50,7 @@ class Splashscreen2 extends StatelessWidget {
                 shape:RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)
                 ),
-                backgroundColor: Colors.green,
+                backgroundColor:Color(0xFF5E55EA),
 
               ),
               child: Center(

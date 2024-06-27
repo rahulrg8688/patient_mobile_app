@@ -43,14 +43,18 @@ class SplashScreen3 extends StatelessWidget {
             height: 50,
             child: ElevatedButton(
               onPressed: () {
-             Get.toNamed("/PhoneNumber");
+
+                Future.delayed(Duration(milliseconds: 200), () {
+                  Get.toNamed("/PhoneNumber"); // Navigate to the new screen
+                });
+
 
               },
               style: ElevatedButton.styleFrom(
                 shape:RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)
                 ),
-                backgroundColor: Colors.green,
+                backgroundColor: Color(0xFF5E55EA),
 
               ),
               child: Center(

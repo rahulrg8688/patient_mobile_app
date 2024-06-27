@@ -65,7 +65,7 @@ appBar: AppBar(),
               controller: controller.passwordValue,
                 obscureText: controller.togglepassword,
               onTap: (){
-
+                    controller.IsTappedChange();
 
 
               },
@@ -101,7 +101,24 @@ appBar: AppBar(),
               ),
               ElevatedButton(onPressed: (){
                 controller.PasswordLogin();
-              }, child: Text("Login"))
+              }, child: Text("Login",
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                  color: controller.IsTapped?Colors.white:Colors.white,
+                ),
+              ),
+                style: ElevatedButton.styleFrom(
+
+                    padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    backgroundColor: controller.IsTapped?Color(0xFF5E55EA):Color(0xFFC1C1C1)
+                ),
+
+              )
           ],
               ),
               ),

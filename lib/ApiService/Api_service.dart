@@ -42,12 +42,10 @@ RefreshToken token=RefreshToken();
       await putrequestForRefreshToken();
       return getRequest(endpoint);
     }
-    if(response.statusCode==200){
+
       return response;
-    }
-    else{
-      throw Exception('Failed to load data');
-    }
+
+
   }
 
   Future<http.Response> postRequest(String endpoint, Map<String,dynamic> data) async{

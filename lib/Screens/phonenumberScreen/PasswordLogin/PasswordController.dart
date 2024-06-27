@@ -13,6 +13,8 @@ bool togglepassword=false;
   var mobileNumber='';
   int referenceId=0;
   int AccountId=0;
+  bool IsTapped=false;
+  bool GotResult=false;
   TextEditingController passwordValue=TextEditingController();
 final GetStorage storage=GetStorage();
   void SetMobileNumber(String mobile,int referenceId,int Account){
@@ -20,6 +22,26 @@ final GetStorage storage=GetStorage();
     this.referenceId=referenceId;
     this.AccountId=Account;
   }
+@override
+  void dispose() {
+    // TODO: implement dispose
+  passwordValue.dispose();
+    super.dispose();
+    togglepassword=false;
+    mobileNumber='';
+     referenceId=0;
+     AccountId=0;
+     IsTapped=false;
+     GotResult=false;
+  }
+void  resetStates(){
+   togglepassword=false;
+   mobileNumber='';
+   passwordValue.clear();
+   IsTapped=false;
+   GotResult=false;
+  update();
+}
 
   void passwordChange()
   {
@@ -28,10 +50,17 @@ final GetStorage storage=GetStorage();
 
   }
 
+  void IsTappedChange(){
+    IsTapped=true;
+    update();
+  }
+
+
 ApiService apiService=ApiService(baseUrl: Apis.baseUrl);
   PatientAuthenticate patient=PatientAuthenticate();
 
   Future<void> PasswordLogin() async{
+    print("patinetId $referenceId");
     var response=await apiService.postRequest(Apis.LoginApi,{
       "accountId":AccountId,
       "accountTypes":["Patient"],
@@ -45,11 +74,13 @@ ApiService apiService=ApiService(baseUrl: Apis.baseUrl);
       "username":"1:${mobileNumber}"
     });
     if(response.statusCode==200){
+      GotResult=true;
     patient=PatientAuthenticate.fromJson(jsonDecode(response.body));
     print(patient.token!.split(' ')[1]);
     storage.write('JwtToken', patient.token!.split(' ')[1]);
     print(patient.referenceToken);
     storage.write('ReferenceToken', patient.referenceToken);
+      resetStates();
     Get.toNamed("/home");
 
     }

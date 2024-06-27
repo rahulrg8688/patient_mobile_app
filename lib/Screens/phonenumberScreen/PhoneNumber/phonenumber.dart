@@ -103,6 +103,9 @@ var formkey=GlobalKey<FormState>();
                               return null;
                             },
                             onChanged: (val){
+                          if(val.length!=10){
+                            controller.EnteringNewMobileNum();
+                          }
                                 formkey.currentState!.validate();
                             },
 
@@ -131,61 +134,65 @@ var formkey=GlobalKey<FormState>();
                       ),
 
                       Container(
-                        margin: EdgeInsets.fromLTRB(1, 0, 1, 0),
+                        //margin: EdgeInsets.fromLTRB(1, 0, 1, 0),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Color(0xFFC1C1C1),
+                            //color: Color(0xFFC1C1C1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Container(
-                            //padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
+                           
+
                             child:
                             Row(
                               children: [
                                 Expanded(
-
-                                  child: ElevatedButton(
-                                    onPressed: (){
-                                      print(",,,,,,");
-
-                                        if(formkey.currentState!.validate()){
-                                          if(controller.GotResult){
-                                          print(controller.phoneNumber.value);
-                                          controller.SendOtp();
-
+                                    flex:2,
+                                  child: Container(
+                                    margin: EdgeInsets.all(9),
+                                    child: ElevatedButton(
+                                      onPressed: (){
+                                        print(",,,,,,");
+                                    
+                                          if(formkey.currentState!.validate()){
+                                            if(controller.GotResult){
+                                            print(controller.phoneNumber.value);
+                                            controller.SendOtp();
+                                    
+                                          }
                                         }
-                                      }
-                                      else{
-                                        null;
-                                      }
-
-                                    },
-
-                                    style: ElevatedButton.styleFrom(
-
-                                      padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
+                                        else{
+                                          null;
+                                        }
+                                    
+                                      },
+                                    
+                                      style: ElevatedButton.styleFrom(
+                                    
+                                        padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        backgroundColor: IsTapped&&controller.GotResult?Color(0xFF5E55EA):Color(0xFFC1C1C1)
                                       ),
-                                      backgroundColor: IsTapped&&controller.GotResult?Colors.green:Color(0xFFC1C1C1)
-                                    ),
-                                    child:Text("send OTP",
-                                      style: TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 16,
-                                      color: IsTapped?Colors.white:Colors.white,
-                                    ),
-                                    ),),
+                                      child:Text("send OTP",
+                                        style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 16,
+                                        color: IsTapped?Colors.white:Colors.white,
+                                      ),
+                                      ),),
+                                  ),
                                 ),
                                 Expanded(
-
+                                      flex:2,
                                   child: ElevatedButton(
                                     onPressed: (){
                                       print(",,,,,,");
 
                                       if(formkey.currentState!.validate()){
-                                        if(controller.GotResult){
+                                        if(controller.GotResult && controller.PasswordButton){
                                           print(controller.phoneNumber.value);
                                           controller.LoginWithPassword();
 
@@ -199,18 +206,19 @@ var formkey=GlobalKey<FormState>();
 
                                     style: ElevatedButton.styleFrom(
 
+
                                         padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(10),
                                         ),
-                                        backgroundColor: IsTapped&&controller.GotResult?Colors.green:Color(0xFFC1C1C1)
+                                        backgroundColor: controller.PasswordButton&&controller.GotResult?Color(0xFF5E55EA):Color(0xFFC1C1C1)
                                     ),
                                     child:Text("Login with password",
                                       style: TextStyle(
                                         fontFamily: 'Poppins',
                                         fontWeight: FontWeight.w500,
                                         fontSize: 16,
-                                        color: IsTapped?Colors.white:Colors.white,
+                                        color: controller.PasswordButton?Colors.white:Colors.white,
                                       ),
                                     ),),
                                 ),

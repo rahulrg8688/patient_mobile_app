@@ -278,7 +278,7 @@ class _VerifyotpscreenState extends State<Verifyotpscreen> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  backgroundColor:IsTapped?Colors.green:Color(0xFFC1C1C1)
+                                  backgroundColor:IsTapped?Color(0xFF5E55EA):Color(0xFFC1C1C1)
                               ),
                               child:Otpcontroller.isLoading?CircularProgressIndicator(): Text(
                                 'Verify',

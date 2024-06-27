@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:patient_application/ApiService/Api_service.dart';
 import 'package:patient_application/Screens/phonenumberScreen/PasswordLogin/PasswordController.dart';
@@ -23,9 +24,22 @@ class Phonenumbercontroller extends GetxController{
   int accountId=0;
   int referenceId=0;
   bool IsLoading=false;
+  bool PasswordButton=false;
   TextEditingController phoneNumber=TextEditingController();
-
+GetStorage storage=GetStorage();
   ApiService apiService=ApiService(baseUrl:Apis.baseUrl );
+
+  void RemoveStates(){
+    GotResult=false;
+    otp='';
+    IsLoading=false;
+    phoneNumber.clear();
+  }
+void EnteringNewMobileNum(){
+  GotResult=false;
+  PasswordButton=false;
+  update();
+}
 
   Future<void> MobileNumber() async{
     IsLoading=true;
@@ -49,7 +63,20 @@ class Phonenumbercontroller extends GetxController{
          if(res.item1!=null) {
            countryId = res.item1![0].countryId ?? 0;
            referenceId = res.item1![0].referenceId ?? 0;
+           print("patientId is : ${referenceId}");
            accountId = res.item1![0].accountId ?? 0;
+           storage.write('referenceId',referenceId);
+           storage.write('accountId', accountId);
+
+           update();
+         }
+         if(res.item2!=null){
+           PasswordButton=false;
+           update();
+
+         }
+         if(res.item2==null){
+           PasswordButton=true;
            update();
          }
    }
@@ -99,9 +126,14 @@ class Phonenumbercontroller extends GetxController{
   }
 
 
+
+
+
   Future<void> LoginWithPassword() async{
+
     Passwordcontroller password=Get.put(Passwordcontroller());
     password.SetMobileNumber(phoneNumber.text,referenceId,accountId);
+    RemoveStates();
       Get.toNamed("/passwordLogin");
 
   }

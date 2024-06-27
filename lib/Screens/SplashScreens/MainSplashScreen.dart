@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:patient_application/Screens/SplashScreens/SpalshScreen3.dart';
 import 'package:patient_application/Screens/SplashScreens/SplashScreen1.dart';
 import 'package:patient_application/Screens/SplashScreens/SplashScreen2.dart';
@@ -35,12 +36,15 @@ class _MainsplashscreenState extends State<Mainsplashscreen> {
         } else {
           // Show the modal bottom sheet after the delay
           WidgetsBinding.instance!.addPostFrameCallback((_) {
+
             showModalBottomSheet(
               context: context,
+              isDismissible: false, // Prevent dismissing by tapping outside
+              enableDrag: false,
               builder: (BuildContext context) {
                 return SizedBox(
                   width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height * 0.6,
+                  height: MediaQuery.of(context).size.height * 0.45,
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.only(
@@ -64,7 +68,17 @@ class _MainsplashscreenState extends State<Mainsplashscreen> {
           });
 
           // Return an empty container while waiting for the bottom sheet to close
-          return Container();
+          return Scaffold(
+
+              body: Container(
+                color:Color(0xFF5E55EA),
+
+                child: Padding(
+                  padding: const EdgeInsets.all(40.0),
+                  child: Image.asset('assets/DoctorImages/SplashScreenImage.png'),
+                ),
+              ),
+          );
         }
       },
     );
