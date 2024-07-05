@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:patient_application/Screens/phonenumberScreen/PhoneNumber/PhoneNumberController.dart';
 
-import '../../MainScreens/HomeScreen/hme.dart';
+//import '../../MainScreens/HomeScreen/hme.dart';
 import 'VerifiedPopup.dart';
 
 class Verifyotpcontroller extends GetxController{

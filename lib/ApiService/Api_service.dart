@@ -48,17 +48,23 @@ RefreshToken token=RefreshToken();
 
   }
 
-  Future<http.Response> postRequest(String endpoint, Map<String,dynamic> data) async{
-    final response=await http.post(Uri.parse("${baseUrl}/${endpoint}"),
-    headers: <String,String>{
+  Future<http.Response> postRequest(String endpoint, Map<String,dynamic> data,{Map<String,String>? headers}) async{
+
+   Map<String,String> defaultheaders= {
       'Authorization': 'Bearer ${storage.read('JwtToken')}',
       'content-Type':'application/json ; charset=UTF-8',
-    },
-    body: jsonEncode(data),
-    );
+    };
+   if(headers!=null){
+     defaultheaders.addAll(headers);
+   }
+   final response=await http.post(Uri.parse("${baseUrl}/${endpoint}"),
+   headers:defaultheaders,
+     body: jsonEncode(data),
+   );
+
       if(response.statusCode==401){
        await putrequestForRefreshToken();
-       return postRequest(endpoint, data);
+       return postRequest(endpoint, data,headers: headers);
       }
       return response;
 

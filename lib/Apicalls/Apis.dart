@@ -6,15 +6,15 @@ class  Apis{
 
 
 
- static const String baseUrl="https://qa.careaxes.net/fernandez-api/api";
+ static const String baseUrl="https://uat.careaxes.net/uat-qa-api/api";
 
 
 static  const String CheckUserApi="patients/check-user-list";
   static const String sendOtpApi="account/send-otp-patient";
   static const String LoginApi="account/patient-authenticate";
   static const String RefreshTokenApi="account/refresh-authentication";
-
-
+static const String LogoutApi="account/logout";
+static  String SearchDoctors(String a)=>"resources/masters1?searchParam=${a}";
   static const GetLocations={
     'LocationApi':"resources/locations",
   };
@@ -24,6 +24,7 @@ static  const String CheckUserApi="patients/check-user-list";
     'AllDoctorsList':"providers/fetch-provider-list-items",
     'DoctorAvailableDates':"provider-locations/fetch-provider-availability-dates",
     'DoctorAvailableTime':"provider-locations/fetch-slots-for-multipledays",
+
  };
   static final Appointment={
     'BookingAppointmentApi':"appointments/fetch-all"

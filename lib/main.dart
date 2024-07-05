@@ -5,13 +5,18 @@ import 'package:get/get.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:patient_application/Screens/MainScreens/AboutDoctorScreen/AboutDoctor.dart';
-import 'package:patient_application/Screens/MainScreens/HomeScreen/hme.dart';
+import 'package:patient_application/Screens/MainScreens/recent_doctors_see_all_component/recent_doctor.dart';
+//import 'package:patient_application/Screens/MainScreens/HomeScreen/hme.dart';
+import 'package:patient_application/Screens/MainScreens/see_all_doctors/see_all.dart';
 import 'package:patient_application/Screens/SplashScreens/MainSplashScreen.dart';
 import 'package:patient_application/Screens/phonenumberScreen/PasswordLogin/Password.dart';
 import 'package:patient_application/Screens/phonenumberScreen/VerifyOtp/VerifyOtpScreen.dart';
 
-import 'Screens/MainScreens/HomeScreen/HomeScreens.dart';
-import 'Screens/MainScreens/HomeScreen/homeScreen.dart';
+import 'Screens/MainScreens/Dashboard/HomeScreen/homeScreen.dart';
+//import 'Screens/MainScreens/HomeScreen/HomeScreens.dart';
+//import 'Screens/MainScreens/HomeScreen/homeScreen.dart';
+import 'Screens/MainScreens/dashboard_screens/dashboard.dart';
+import 'Screens/MainScreens/specialization_component/specialization_seeall.dart';
 import 'Screens/Overrides.dart';
 import 'Screens/SplashScreens/SplashScreen1.dart';
 import 'Screens/phonenumberScreen/PhoneNumber/phonenumber.dart';
@@ -31,6 +36,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+
     return GetMaterialApp(
       title: 'Patient Application',
       debugShowCheckedModeBanner: false,
@@ -44,12 +50,15 @@ initialRoute: '/',
       GetPage(name: "/PhoneNumber", page:()=>phonenumber()),
         GetPage(name: "/VerifyOtp", page:()=>Verifyotpscreen()),
         GetPage(name: "/passwordLogin", page:()=>Password()),
-        GetPage(name: "/home", page:()=>homeScreen()),
+        GetPage(name: "/home", page:()=>Dashboard()),
         GetPage(name: "/AboutDoctor", page:()=> Aboutdoctor(
           DoctId: Get.arguments['DoctId'],
           Spid:Get.arguments['Spid']
         )),
 
+GetPage(name: "/SeeAllDoctors", page: ()=>SeeAll()),
+        GetPage(name: "/SeeAllSpecialization", page:()=>SpecializationSeeall()),
+        GetPage(name: "/SeeAllRecentDoctors", page:()=>RecentDoctor())
       ],
 
       home: Mainsplashscreen(),

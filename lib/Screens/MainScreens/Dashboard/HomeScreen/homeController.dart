@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
@@ -7,12 +8,13 @@ import 'package:patient_application/ModelClass/DoctorsModel.dart';
 import 'package:patient_application/ModelClass/GetDoctorBookings.dart';
 import 'package:patient_application/ModelClass/GetLocations.dart';
 import 'package:patient_application/Screens/MainScreens/AboutDoctorScreen/AboutDoctorController.dart';
+import 'package:patient_application/Screens/MainScreens/see_all_doctors/see_all_controller.dart';
 
-import '../../../ApiService/Api_service.dart';
-import '../../../Apicalls/Apis.dart';
-import '../../../ModelClass/GetLocations.dart';
-import '../../../ModelClass/GetSpeciality.dart';
-import '../AboutDoctorScreen/AboutDoctor.dart';
+import '../../../../ApiService/Api_service.dart';
+import '../../../../Apicalls/Apis.dart';
+import '../../../../ModelClass/GetSpeciality.dart';
+import '../../../../ModelClass/search_doctors_modelList.dart';
+
 
 class homeController extends GetxController{
   int currentSlide=0;
@@ -22,6 +24,7 @@ class homeController extends GetxController{
   var selectedSpecialityIdByuser=0;
   bool IsLoading=false;
   bool IsSeeAllSpecialityClicked=false;
+ var DoctorNameSearched=TextEditingController();
 
   List carousals=[
     AssetImage('assets/Carousals/carousal2.png'),
@@ -43,13 +46,18 @@ class homeController extends GetxController{
     GetAllDoctors();
     print("Function4 called");
     GetBookingsDoctors();
+
+
   }
 
   GetLocations locations=GetLocations();
   List<GetLocations> location=[];
   List<GetDoctorBookings> GetBookings=[];
+  List<SearchedDoctorsModel> SearchedDoctors=[];
+  List SearchedDoctorList=[];
   List DoctorBookings=[];
   List addlocation=[];
+  List<AllDoctors> doctorsList=[];
   int selectedLocation=1;
   List Specialities=[];
 List doctorList=[];
@@ -162,16 +170,20 @@ void SeeAllSpecialityButtonClicked(){
     update();
 }
 
-    Future<void> GetAllDoctors() async{
+
+
+    Future<List<AllDoctors>> GetAllDoctors({int? pageIndex,int? pageSize}) async{
     IsLoading=true;
     print("GetAlldoctors function called");
 
     var requestBody={
       "consultationName":"Physical Consultation",
+      "pageIndex": pageIndex??1,
+      "pageSize": pageSize!=10?70:10
     };
-    // if(selectedSpecialityIdByuser>=0){
-    //   requestBody['specializationId']=(selectedSpecialityIdByuser).toString();
-    // } //
+     if(selectedSpecialityIdByuser>=0){
+       requestBody['specializationId']=(selectedSpecialityIdByuser).toString();
+     } //
     //SpecilaizationId based
      if(selectedLocation>0){
        requestBody['locationId']=selectedLocation.toString();
@@ -189,7 +201,7 @@ void SeeAllSpecialityButtonClicked(){
               print("List returning");
               print("Length of list : ${responsebody.length}");
 
-              List<AllDoctors> doctorsList=responsebody.map((e)=>AllDoctors.fromJson(e)).toList();
+               doctorsList=responsebody.map((e)=>AllDoctors.fromJson(e)).toList();
              for(var doctor in doctorsList){
                print("Doctor account Id : ${doctor.accountId}");
                print("Doctor speciality : ${doctor.specializations}");
@@ -216,7 +228,9 @@ void SeeAllSpecialityButtonClicked(){
             else if(responsebody is Map<String, dynamic>){
               print("I am object");
             }
+            return doctorsList;
           }
+          return [];
 
     }
 
@@ -229,6 +243,59 @@ void SeeAllSpecialityButtonClicked(){
       SpecializiedDoctors= doctorList.where((doctor) => doctor['specialityId'] == selectedSpecialityIdByuser).toList();
     }
   }
+  Timer? _debounce;
+Future<void> SearchedDoctorsList(String val) async {
+  print("function called");
+  if (_debounce?.isActive ?? false) _debounce!.cancel();
+  _debounce = Timer(Duration(milliseconds: 500), () async {
+    await fetchSearchDoctors(val);
+  });
+}
+Future<void> fetchSearchDoctors(String val) async{
+      // Perform API request with the debounced value
+  if(val.isEmpty){
+    SearchedDoctors=[];
+  }
+  else {
+    SearchedDoctors=[];
+    DoctorNameSearched.text = val;
+
+    var response =
+    await apiService.getRequest(Apis.SearchDoctors(DoctorNameSearched.text));
+    if (response.statusCode == 200) {
+      print(response.body);
+      List<dynamic> responseBody = jsonDecode(response.body);
+      SearchedDoctors = responseBody
+          .map((e) => SearchedDoctorsModel.fromJson(e))
+          .toList();
+
+      for (var doctor in SearchedDoctors) {
+        print("searched doctor : ${doctor.id}");
+        print("searched doctor value is : ${doctor.value}");
+      }
+      print(SearchedDoctors.length);
+
+      update(); // Notify listeners that the state has changed
+    }
+  }
+    }
+
+
+
+    // var response=await apiService.getRequest(Apis.SearchDoctors(DoctorNameSearched.text));
+    // if(response.statusCode==200){
+    //   print(response.body);
+    //   List<dynamic> responsebody=jsonDecode(response.body);
+    //  SearchedDoctors= responsebody.map((e)=>SearchedDoctorsModel.fromJson(e)).toList();
+    //
+    //  for(var Doctor in SearchedDoctors){
+    //    print("searched doctor : ${Doctor.id}");
+    //    print("Searched doctor value os : ${Doctor.value}");
+    //  }
+    //  print(SearchedDoctors.length);
+    //   update();
+    // }
+
 
 
     Future<void> GetBookingsDoctors() async{
@@ -242,14 +309,11 @@ void SeeAllSpecialityButtonClicked(){
         "patientId": patientId, // mandatory field
         "resultsType": "Pending",
         "status": ""
-
-
     });
     if(response.statusCode==200){
       print(response.body);
       List<dynamic> responseBody=jsonDecode(response.body);
       GetBookings=responseBody.map((e)=>GetDoctorBookings.fromJson(e)).toList();
-
       for(var bookings in GetBookings){
         print("Booking is : ${bookings.providerName}");
       }
@@ -275,7 +339,7 @@ void SeeAllSpecialityButtonClicked(){
      update();
      filterDoctors();
    }
-   void DoctorParticularClick(int doctid,int spid){
+   void DoctorParticularClick(int doctid,{int? spid}){
     print(doctid);
    // Aboutdoctorcontroller AboutDoctor=Get.put(Aboutdoctorcontroller(spid,doctid));
       //AboutDoctor.setDoctorIdAndDoctorId(spid,doctid);

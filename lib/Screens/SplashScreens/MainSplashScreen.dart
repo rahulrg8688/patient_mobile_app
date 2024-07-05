@@ -39,7 +39,7 @@ class _MainsplashscreenState extends State<Mainsplashscreen> {
 
             showModalBottomSheet(
               context: context,
-              isDismissible: false, // Prevent dismissing by tapping outside
+              //isDismissible: false, // Prevent dismissing by tapping outside
               enableDrag: false,
               builder: (BuildContext context) {
                 return SizedBox(
