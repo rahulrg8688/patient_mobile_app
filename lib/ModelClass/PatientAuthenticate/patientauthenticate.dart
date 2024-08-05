@@ -11,7 +11,7 @@ class PatientAuthenticate {
   String? countryCode;
   String? countryName;
   String? isoCode;
-  String? sessionId;
+  int? sessionId;
   String? lastLoginDate;
   String? thumbnailUrl;
   bool? isAgreed;

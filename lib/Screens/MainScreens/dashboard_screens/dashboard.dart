@@ -1,15 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
+import 'package:patient_application/GetStorage/StorageService.dart';
+import 'package:patient_application/Jitse/call_service.dart';
 import 'package:patient_application/Screens/MainScreens/Dashboard/ProfileScreen/profile_screen.dart';
 import 'package:patient_application/Screens/MainScreens/Dashboard/support_screen/support_screen.dart';
 import 'package:patient_application/Screens/MainScreens/dashboard_screens/dashboard_controller.dart';
 
+import '../../../call_screen.dart';
 import '../Dashboard/HomeScreen/homeScreen.dart';
 import '../Dashboard/notification_screen/notification.dart';
 
-class Dashboard extends StatelessWidget {
+class Dashboard extends StatefulWidget {
    Dashboard({super.key});
 
+  @override
+  State<Dashboard> createState() => _DashboardState();
+}
+
+class _DashboardState extends State<Dashboard> with WidgetsBindingObserver {
+ CallService callService=CallService();
+
+ @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    //print("Patient id is :: ${StorageService.GetPatientAccountId()}");
+    callService.requestNotificationPermissions();
+    callService.foregroundMessage();
+    callService.firebaseInit(context);
+    callService.getDeviceToken().then((value){
+      print("Token value is :: $value");
+    });
+    callService.isRefreshToken();
+
+    WidgetsBinding.instance.addObserver(this);
+    callService.handleCallEvents();
+  }
+ @override
+ void dispose() {
+   WidgetsBinding.instance.removeObserver(this);
+   super.dispose();
+ }
   List dashboardScreens=[
     homeScreen(),
     SupportScreen(),
@@ -33,7 +64,7 @@ class Dashboard extends StatelessWidget {
             key:_scaffoldKey,
             bottomNavigationBar: BottomNavigationBar(
               currentIndex: controller.BottomNavBarIndex,
-          
+
               onTap: (position){
                 print("position is : ${position}");
                 controller.bottomNavBarIndexFunc(position);
@@ -47,15 +78,15 @@ class Dashboard extends StatelessWidget {
               unselectedIconTheme: IconThemeData(color:Colors.black),
               unselectedItemColor: Colors.black,
                 items:[
-          
+
                   BottomNavigationBarItem(icon:Icon(Icons.home,
                     size: 20,
-          
+
                   ),label:"Home"),
                   BottomNavigationBarItem(icon:Icon(Icons.support_agent,size: 20,),label:"Support",backgroundColor: Colors.black),
                   BottomNavigationBarItem(icon:Icon(Icons.notifications,size: 20,),label:"Notifications"),
                   BottomNavigationBarItem(icon:Icon(Icons.account_circle,size: 20,),label:"Profile"),
-          
+
                 ]
             ),
             body:dashboardScreens[controller.BottomNavBarIndex] ,

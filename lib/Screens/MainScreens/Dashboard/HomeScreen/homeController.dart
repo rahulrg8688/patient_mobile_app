@@ -3,20 +3,25 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:get/get_rx/get_rx.dart';
 import 'package:patient_application/GetStorage/StorageService.dart';
+import 'package:patient_application/GetStorage/shared_prefs_service.dart';
 import 'package:patient_application/ModelClass/DoctorsModel.dart';
 import 'package:patient_application/ModelClass/GetDoctorBookings.dart';
 import 'package:patient_application/ModelClass/GetLocations.dart';
 import 'package:patient_application/Screens/MainScreens/AboutDoctorScreen/AboutDoctorController.dart';
+import 'package:patient_application/Screens/MainScreens/JitseScreen/Jitse.dart';
 import 'package:patient_application/Screens/MainScreens/see_all_doctors/see_all_controller.dart';
 
 import '../../../../ApiService/Api_service.dart';
 import '../../../../Apicalls/Apis.dart';
+import '../../../../GetStorage/HiveBox.dart';
+import '../../../../Jitse/call_service.dart';
 import '../../../../ModelClass/GetSpeciality.dart';
 import '../../../../ModelClass/search_doctors_modelList.dart';
 
 
-class homeController extends GetxController{
+class homeController extends GetxController with WidgetsBindingObserver{
   int currentSlide=0;
   var BottomNavBarIndex=0.obs;
   var IsClicked=false.obs;
@@ -25,6 +30,7 @@ class homeController extends GetxController{
   bool IsLoading=false;
   bool IsSeeAllSpecialityClicked=false;
  var DoctorNameSearched=TextEditingController();
+
 
   List carousals=[
     AssetImage('assets/Carousals/carousal2.png'),
@@ -37,6 +43,9 @@ class homeController extends GetxController{
   @override
   void onInit() {
     super.onInit();
+    print("Random data of each is ${HiveBox().getRandomData()}");
+    WidgetsBinding.instance.addObserver(this);
+
     // TODO: implement onInit
     print("function 1 called GetLocations");
     GetLocation();
@@ -47,7 +56,51 @@ class homeController extends GetxController{
     print("Function4 called");
     GetBookingsDoctors();
 
+    print("In Home controller ${ApiService.getInstance(baseUrl: '').hashCode}");
 
+
+  }
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    switch (state) {
+      case AppLifecycleState.resumed:
+        print("Home app in foreground");
+        _handleAppResumed();
+
+
+        break;
+      case AppLifecycleState.inactive:
+        print("Home app in inactive");
+        break;
+      case AppLifecycleState.paused:
+        print("Home app in background");
+        break;
+      case AppLifecycleState.detached:
+        print("Home app in detached");
+        break;
+      case AppLifecycleState.hidden:
+      // TODO: Handle this case.
+    }
+  }
+  Future<void> _handleAppResumed() async {
+    print("Home app in foreground");
+
+    // Delay for 3 seconds
+    await Future.delayed(Duration(seconds: 3));
+
+    // Load the call data after the delay
+    var callData = await HiveBox().getStoreCallData();
+    print("Call data is: $callData");
+    if(callData.isNotEmpty) {
+      HiveBox().StoreRandomData(callData);
+      print("I am in home call getting data is :: ${callData}");
+
+      Get.to(Jitse(pressed: true, data: HiveBox().getStoreCallData()));
+      // CallService().getDeviceToken();
+    }
+    else{
+      print("No data in Home Call Data");
+    }
   }
 
   GetLocations locations=GetLocations();
@@ -58,11 +111,11 @@ class homeController extends GetxController{
   List DoctorBookings=[];
   List addlocation=[];
   List<AllDoctors> doctorsList=[];
-  int selectedLocation=1;
+  RxInt selectedLocation=1.obs;
   List Specialities=[];
 List doctorList=[];
   List SpecializiedDoctors=[];
-  ApiService apiService=ApiService(baseUrl: Apis.baseUrl);
+  ApiService apiService=ApiService.getInstance(baseUrl: Apis.baseUrl);
   Future<void> GetLocation() async{
     var response=await apiService.getRequest(Apis.GetLocations['LocationApi']!);
     if(response.statusCode==200){
@@ -97,8 +150,10 @@ List doctorList=[];
   }
 
   void LocationSelected(String val){
-    selectedLocation=int.parse(val);
+    selectedLocation.value=int.parse(val);
     update();
+    print("Selected Location is :: $selectedLocation");
+    SharedPrefsService().SetPreferredLocation(int.parse(val));
     GetAllDoctors();
   }
   void CarouralIndex(int val){
@@ -110,7 +165,7 @@ List doctorList=[];
 
     update();
   }
-  Future<void> GetSpecialitiesOfDoctors() async{
+  Future<List<dynamic>> GetSpecialitiesOfDoctors() async{
     String Endpoint=Apis.GetSpecialities();
     print(Endpoint);
     var response=await apiService.postRequest(Endpoint,{
@@ -131,7 +186,7 @@ List doctorList=[];
           // Handle single object case
           Specialitions doctorSpeciality = Specialitions.fromJson(responseBody);
           if (doctorSpeciality.specializations != null && doctorSpeciality.specializations!.isNotEmpty) {
-
+                  print("I am from object specialities");
             //print("single object : ${doctorSpeciality.specializations![1].value}");
             doctorSpeciality.specializations!.forEach((spec){
 
@@ -158,6 +213,8 @@ List doctorList=[];
       print("Failed to fetch specialities: ${response.reasonPhrase}");
     }
     update();
+    return Specialities;
+
 
     }
 
@@ -251,7 +308,7 @@ Future<void> SearchedDoctorsList(String val) async {
     await fetchSearchDoctors(val);
   });
 }
-Future<void> fetchSearchDoctors(String val) async{
+Future<List<SearchedDoctorsModel>> fetchSearchDoctors(String val) async{
       // Perform API request with the debounced value
   if(val.isEmpty){
     SearchedDoctors=[];
@@ -278,6 +335,7 @@ Future<void> fetchSearchDoctors(String val) async{
       update(); // Notify listeners that the state has changed
     }
   }
+  return SearchedDoctors;
     }
 
 
@@ -297,15 +355,16 @@ Future<void> fetchSearchDoctors(String val) async{
     // }
 
 
-
-    Future<void> GetBookingsDoctors() async{
+int ctr=0;
+    Future<List<GetDoctorBookings>> GetBookingsDoctors() async{
       print("GetBooking called");
-    int patientId=StorageService.GetReferenceId();
+    int patientId=SharedPrefsService().GetReferenceIdForPatient();
+    print("Patient Id is :: $patientId");
     var response=await apiService.postRequest(Apis.Appointment['BookingAppointmentApi']!, {
 
         "isMobile": true,
         "pageIndex": 1, // not mandatory
-        "pageSize": 10, // not mandatory
+        "pageSize": 20, // not mandatory
         "patientId": patientId, // mandatory field
         "resultsType": "Pending",
         "status": ""
@@ -315,14 +374,22 @@ Future<void> fetchSearchDoctors(String val) async{
       List<dynamic> responseBody=jsonDecode(response.body);
       GetBookings=responseBody.map((e)=>GetDoctorBookings.fromJson(e)).toList();
       for(var bookings in GetBookings){
+        ctr++;
+        if(ctr==2){
+          DoctorBookings.add(bookings);
+          update();
+          break;
+
+        }
+
         print("Booking is : ${bookings.providerName}");
       }
-      DoctorBookings.add(GetBookings);
+     // DoctorBookings.add(GetBookings);
 
       print("Doctor booking : ${DoctorBookings.length}");
-      update();
-    }
 
+    }
+return GetBookings;
     }
    void SelectedSpeciality(int val){
     selectedSpecialityIndexGrid=val;
@@ -339,6 +406,7 @@ Future<void> fetchSearchDoctors(String val) async{
      update();
      filterDoctors();
    }
+
    void DoctorParticularClick(int doctid,{int? spid}){
     print(doctid);
    // Aboutdoctorcontroller AboutDoctor=Get.put(Aboutdoctorcontroller(spid,doctid));

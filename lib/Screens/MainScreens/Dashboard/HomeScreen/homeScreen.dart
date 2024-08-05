@@ -1,6 +1,9 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:patient_application/GetStorage/shared_prefs_service.dart';
+import 'package:patient_application/Screens/phonenumberScreen/PhoneNumber/PhoneNumberController.dart';
 //import 'package:patient_application/Screens/MainScreens/HomeScreen/homeController.dart';
 
 import '../../../../ModelClass/search_doctors_modelList.dart';
@@ -80,10 +83,58 @@ class homeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List Alldoctors=controller.doctorList;
+    Future<bool> _onback(BuildContext context) async {
+      bool? exitApp = await showDialog(
+        context: context,
+        builder: ((context) {
+          return AlertDialog(
+            title: const Text('¿Quieres salir?',
+                style: TextStyle(
+                  fontSize: 15,
+                )),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                  child: const Text('No')),
+              TextButton(
+                  onPressed: () {
+                    // _flutterRadioPlayer.pause();
+                    // _flutterRadioPlayer.stop();
+                    //exit(0);
+                    Navigator.of(context).pop(true);
+                  },
+                  child: const Text('Yes'))
+            ],
+          );
+        }),
+      );
+
+      return exitApp ?? false;
+    }
+
+
+
     return GetBuilder<homeController>(
       builder: (controller) {
-        return Scaffold(
+        List Alldoctors=controller.doctorList;
+        return PopScope(
+            canPop: false,
+            onPopInvoked: (didPop) async{
+              debugPrint("didPop1: $didPop");
+              SystemNavigator.pop();
+        if(didPop){
+        return;
+        }
+              // final bool shouldPop = await _onback(context);
+              // if (shouldPop) {
+              //
+              // }
+
+            },
+            child:
+         Scaffold(
           body:
                 SizedBox(
                   width:double.infinity,
@@ -163,7 +214,7 @@ class homeScreen extends StatelessWidget {
                                                             ),
                                                           ),
                                                           Text(
-                                                            'Lora Maddison',
+                                                            SharedPrefsService().GetPatientName().toString(),
                                                             style: TextStyle(
                                                               fontFamily: 'Poppins',
                                                               fontWeight: FontWeight
@@ -194,35 +245,41 @@ class homeScreen extends StatelessWidget {
                                                   child: Padding(
                                                     padding: EdgeInsets.fromLTRB(
                                                         14, 11.5, 0, 11.5),
-                                                    child: DropdownButton(
-                                                      dropdownColor: Color(
-                                                          0x99000000),
-                                                      value: controller
-                                                          .selectedLocation,
-                                                      onChanged: (val) {
-                                                        print(val);
-                                                        if(val!=null) {
-                                                          controller
-                                                              .LocationSelected(
-                                                              val.toString());
-                                                          print(controller
-                                                              .selectedLocation);
-                                                        }
-                                                      },
-                                                      items: controller.addlocation
-                                                          .map((loc) {
-                                                        return DropdownMenuItem(
-                                                          child: Text(
-                                                            loc['name'],
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .white),
-                                                          ),
-                                                          value: loc['id'],
+                                                    child: Container(
+                                                      child: Obx((){
+                                                        return DropdownButton<int>(
+                                                          dropdownColor: Color(
+                                                              0x99000000),
+                                                          value: controller
+                                                              .selectedLocation.value,
+                                                          onChanged: (val) {
+                                                            print(val);
+                                                            if(val!=null) {
+                                                              controller
+                                                                  .LocationSelected(
+                                                                  val.toString());
+                                                              controller.selectedLocation.value=val;
+
+                                                              print(controller
+                                                                  .selectedLocation);
+                                                            }
+                                                          },
+                                                          items: controller.addlocation
+                                                              .map((loc) {
+                                                            return DropdownMenuItem<int>(
+                                                              child: Text(
+                                                                loc['name'],
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                        .white),
+                                                              ),
+                                                              value: loc['id'],
+                                                            );
+                                                          }).toList(),
+                                                          isExpanded: true,
+                                                          underline: SizedBox(),
                                                         );
-                                                      }).toList(),
-                                                      isExpanded: true,
-                                                      underline: SizedBox(),
+                                                      }),
                                                     ),
                                                   ),
                                                 ),
@@ -401,6 +458,7 @@ class homeScreen extends StatelessWidget {
                                           key: searchBoxKey,
                                           controller: controller.DoctorNameSearched,
                                           onChanged: (val) {
+                                            print("home val is $val");
                                             controller.SearchedDoctorsList(val);
                                             if (val.isNotEmpty) {
                                               showOverlay(context);
@@ -836,82 +894,88 @@ class homeScreen extends StatelessWidget {
                               scrollDirection: Axis.vertical,
                               itemCount: controller.GetBookings.length,
                               itemBuilder: (context,index){
-                                return Padding(
-                                  padding: const EdgeInsets.fromLTRB(8.0,0,8.0,0),
-                                  child: Container(
-                                    height: 150,
-                                    width:219,
-                                    child: Card(
-                                      elevation: 2,
-                                      margin: EdgeInsets.symmetric(vertical: 5),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(20.0),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                          //crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                                height:120,
-                                                width:120,
-                                                decoration: BoxDecoration(
-                                                  shape:BoxShape.circle,
-                                                  border: Border.all(
-                                                    color:Color(0xFF5E55EA),
-                                                    width:2.0,
+                                if(index<2){
+                                  return Padding(
+                                    padding: const EdgeInsets.fromLTRB(8.0,0,8.0,0),
+                                    child: Container(
+                                      height: 150,
+                                      width:219,
+                                      child: Card(
+                                        elevation: 2,
+                                        margin: EdgeInsets.symmetric(vertical: 5),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(20.0),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                            //crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                  height:120,
+                                                  width:120,
+                                                  decoration: BoxDecoration(
+                                                    shape:BoxShape.circle,
+                                                    border: Border.all(
+                                                      color:Color(0xFF5E55EA),
+                                                      width:2.0,
+                                                    ),
+
                                                   ),
+                                                  child: Center(child: ClipOval(child: Image.asset('assets/DoctorImages/dr_2.png',fit: BoxFit.cover,)))),
 
-                                                ),
-                                                child: Center(child: ClipOval(child: Image.asset('assets/DoctorImages/dr_2.png',fit: BoxFit.cover,)))),
-
-                                            Container(
-                                              margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
-                                              child: Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                      controller.GetBookings[index].providerName!.capitalize!,
-                                                      style:TextStyle(
-                                                        fontFamily: 'Poppins',
-                                                        fontWeight: FontWeight.w500,
-                                                        fontSize: 16,
-                                                        color:Color(0xFF000000),
-                                                      )
-                                                  ),
-                                                  Row(
-                                                    children: [
-                                                      Container(
-                                                        margin: EdgeInsets.fromLTRB(0, 0, 5, 0),
-                                                        child: Icon(Icons.medical_information,size: 15,
-                                                          color:Color(0xFFC1C1C1) ,
-                                                        ),
-
-                                                      ),
-                                                      Text(controller.GetBookings[index].specializationName!.capitalize!,
-                                                        style: TextStyle(
+                                              Container(
+                                                margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                        controller.GetBookings[index].providerName!.capitalize!,
+                                                        style:TextStyle(
                                                           fontFamily: 'Poppins',
-                                                          fontWeight: FontWeight.w400,
-                                                          fontSize: 14,
-                                                          color:Color(0xFFC1C1C1),
+                                                          fontWeight: FontWeight.w500,
+                                                          fontSize: 16,
+                                                          color:Color(0xFF000000),
+                                                        )
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        Container(
+                                                          margin: EdgeInsets.fromLTRB(0, 0, 5, 0),
+                                                          child: Icon(Icons.medical_information,size: 15,
+                                                            color:Color(0xFFC1C1C1) ,
+                                                          ),
+
                                                         ),
-                                                      ),
-                                                    ],
-                                                  )
+                                                        Text(controller.GetBookings[index].specializationName!.capitalize!,
+                                                          style: TextStyle(
+                                                            fontFamily: 'Poppins',
+                                                            fontWeight: FontWeight.w400,
+                                                            fontSize: 14,
+                                                            color:Color(0xFFC1C1C1),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )
 
 
 
 
-                                                ],
+                                                  ],
+                                                ),
                                               ),
-                                            ),
 
 
 
-                                          ],
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                );
+                                  );
+                                }
+                                else{
+                                  return SizedBox();
+                                }
+
                               }),
                         )
 
@@ -929,6 +993,7 @@ class homeScreen extends StatelessWidget {
 
 
                 )
+        )
         );
 
               }
@@ -976,6 +1041,7 @@ class homeScreen extends StatelessWidget {
           ),
         ),
       ],
+
     );
 
 

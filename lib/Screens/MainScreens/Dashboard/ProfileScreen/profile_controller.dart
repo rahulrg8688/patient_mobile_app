@@ -1,13 +1,26 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:patient_application/GetStorage/HiveBox.dart';
+import 'package:patient_application/GetStorage/StorageService.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../../../ApiService/Api_service.dart';
 import '../../../../Apicalls/Apis.dart';
 
+
 class ProfileController extends GetxController{
 
-  ApiService apiService=ApiService(baseUrl: Apis.baseUrl);
+  ApiService apiService=ApiService.getInstance(baseUrl: Apis.baseUrl);
+
+  @override
+  void onInit() async{
+    // TODO: implement onInit
+    super.onInit();
+
+
+  }
 List MyRecordsList=[
   {
   'IconData':Icon(Icons.heart_broken_outlined),
@@ -105,6 +118,24 @@ void MyRecordsListSetIndex(int val){
   MyRecordsListIndex=val;
   print("My invoice index is : ${MyRecordsListIndex}");
   update();
+  switch(MyRecordsListIndex){
+    case 0:{
+      print("My Appointments");
+      Get.toNamed('/MyAppointments');
+    }
+    case 1:{
+      print("My prescriptions");
+      Get.toNamed('/MyPrescriptions');
+
+    }
+    case 2:{
+      print("Health Docyments");
+    }
+    case 3:{
+      print("Lab reports");
+      Get.toNamed('/LabReports');
+    }
+  }
 }
 var MyInvoicesListIndex=0;
 void MyInvoiceListSetIndex(int val){
@@ -113,11 +144,71 @@ void MyInvoiceListSetIndex(int val){
   print("My invoice index is : ${MyInvoicesListIndex}");
   print("the value is ${MyInvoiceList[MyInvoicesListIndex]}");
   update();
+  switch(MyInvoicesListIndex){
+    case 0:
+      {
+        print("Scan Invoice");
+        Get.toNamed("/ScanInvoiceScreen");
+      }
+      break;
+    case 1:
+      {
+        print("Lab Invoice");
+        Get.toNamed("/LabInvoiceReport");
+      }
+      break;
+    case 2:
+      {
+        print("Pharma Invoice");
+        Get.toNamed("PharmaInvoiceScreen");
+      }
+      break;
+  }
+}
+Future<void> launchUrl(String phoneNumber) async{
+  final String url = 'tel:$phoneNumber';
+  try{
+
+    if(await canLaunch(url)) {
+      await launch(url);
+    }
+      else{
+     throw 'could not launch $url';
+      }
+    }
+
+      catch(e){
+    print(e.toString());
+      }
 }
 int GeneralListIndex=0;
 void MyGeneralListSetIndex(int val){
   GeneralListIndex=val;
   print("General Index is ${GeneralListIndex}");
+  switch(GeneralListIndex){
+    case 0:{
+    launchUrl(('8886600888'));
+    }
+    break;
+    case 1:{
+
+    }
+    break;
+    case 2:{
+      print("CHnage password");
+      Get.toNamed('/ChangePassword');
+    }
+    break;
+    case 3:{
+      print("Admissoios");
+      Get.toNamed("/PatientAdmissions");
+    }
+    break;
+    case 6:{
+      print("My profile updates");
+      Get.toNamed('/MyprofileUpdate');
+    }
+  }
 
  update();
 
@@ -133,6 +224,9 @@ void MyGeneralListSetIndex(int val){
   };
   var response=await apiService.postRequest(Apis.LogoutApi,requestBody,headers: customHeaders);
   if(response.statusCode==200){
+
+    HiveBox().DeleteToken();
+
     Get.toNamed("/PhoneNumber");
   }
   }

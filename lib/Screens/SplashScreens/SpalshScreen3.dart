@@ -6,7 +6,7 @@ import '../phonenumberScreen/PhoneNumber/phonenumber.dart';
 
 class SplashScreen3 extends StatelessWidget {
    SplashScreen3({super.key,required this.pageController3});
-  late PageController pageController3=PageController();
+  final PageController pageController3;
 
   @override
   Widget build(BuildContext context) {
@@ -42,10 +42,10 @@ class SplashScreen3 extends StatelessWidget {
             width:double.infinity,
             height: 50,
             child: ElevatedButton(
-              onPressed: () {
+              onPressed: () async{
 
-                Future.delayed(Duration(milliseconds: 200), () {
-                  Get.toNamed("/PhoneNumber"); // Navigate to the new screen
+                await Future.delayed(Duration(seconds:2), () {
+                  Get.offAndToNamed("/PhoneNumber"); // Navigate to the new screen
                 });
 
 

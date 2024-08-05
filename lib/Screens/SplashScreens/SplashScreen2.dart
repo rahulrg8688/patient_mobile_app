@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class Splashscreen2 extends StatelessWidget {
    Splashscreen2({super.key,required this.pageController2});
-  late PageController pageController2=PageController();
+  final PageController pageController2;
 
   @override
   Widget build(BuildContext context) {
